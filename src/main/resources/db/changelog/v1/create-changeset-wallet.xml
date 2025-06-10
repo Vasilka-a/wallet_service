@@ -1,0 +1,15 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="create_wallet_table" author="Nastya B">
+        <sql>
+            create table wallet
+            (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                amount money
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>
