@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Builder
 public class Wallet {
     @Id
-    @GeneratedValue (strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     private UUID walletId;
     @Column(name = "amount")
