@@ -1,7 +1,7 @@
 package com.example.testtask.dto;
 
 import com.example.testtask.entity.OperationType;
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,8 +14,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransferRequest {
+    @NotNull(message = "WalletId cannot be null")
     private UUID walletId;
+
+    @NotNull(message = "Operation type cannot be null")
     private OperationType operationType;
-    @Positive(message = "Сумма должна быть положительной")
+
+    @NotNull(message = "Amount cannot be null")
+    @Positive(message = "The amount must be positive")
     private BigDecimal amount;
 }
