@@ -1,13 +1,11 @@
 <databaseChangeLog
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet id="insert-wallet" author="Nastya B">
+    <changeSet id="create_operation_type" author="Nastya B">
         <sql>
-            insert into wallet (amount)
-            values (10000), (45000), (120000), (130000), (100000),
-                   (76000), (50000), (450000), (16000000);
+            create type operation_type as enum ('DEFAULT', 'DEPOSIT', 'WITHDRAW');
         </sql>
     </changeSet>
 </databaseChangeLog>
