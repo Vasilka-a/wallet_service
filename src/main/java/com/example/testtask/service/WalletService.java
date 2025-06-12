@@ -1,54 +1,78 @@
 package com.example.testtask.service;
 
 import com.example.testtask.dto.TransferRequest;
+import com.example.testtask.dto.TransferResponse;
+import com.example.testtask.entity.Operation;
 import com.example.testtask.exceptions.DataHasNotUpdateException;
+import com.example.testtask.repository.OperationRepository;
 import com.example.testtask.repository.WalletRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
-@Transactional
+
 public class WalletService {
     private final WalletRepository walletRepository;
+    private final OperationRepository operationRepository;
 
-    public WalletService(WalletRepository walletRepository) {
+    public WalletService(WalletRepository walletRepository, OperationRepository operationRepository) {
         this.walletRepository = walletRepository;
+        this.operationRepository = operationRepository;
     }
 
     public void doTransfer(TransferRequest transferRequest) {
-        BigDecimal actualBalance = getBalance(transferRequest.getWalletId());
+        BigDecimal actualBalance = getBalance(transferRequest.getWalletId()).getAmount();
 
         switch (transferRequest.getOperationType()) {
-            case DEPOSIT ->
-                    deposit(actualBalance, transferRequest.getAmount(), transferRequest.getWalletId());//внести, если есть обновить сумму
+            case DEPOSIT -> deposit(actualBalance, transferRequest);
             case WITHDRAW -> {
                 if (actualBalance.compareTo(transferRequest.getAmount()) < 0) {
+                    saveOperation(transferRequest, false);
                     throw new IllegalArgumentException("Insufficient funds to withdraw the amount: " + transferRequest.getAmount());//недостаточно средств
                 }
-                withdraw(actualBalance, transferRequest.getAmount(), transferRequest.getWalletId());//снять, если больше вывести ошибку
+                withdraw(actualBalance, transferRequest);
             }
-            default ->
-                    throw new IllegalArgumentException("Unexpected operation type: " + transferRequest.getOperationType());
+            default -> {
+                saveOperation(transferRequest, false);
+                throw new IllegalArgumentException("Unexpected operation type: " + transferRequest.getOperationType());
+            }
         }
     }
 
-    public BigDecimal getBalance(UUID walletId) {
-        return walletRepository.getWalletByUUID(walletId)
-                .orElseThrow(() -> new EntityNotFoundException("Wallet is not found"));
+    public TransferResponse getBalance(UUID walletId) {
+        BigDecimal amount = walletRepository.getWalletByUUID(walletId)
+                .orElseThrow(() -> new EntityNotFoundException("Wallet is not found. Wallet Id: " + walletId));
+        return new TransferResponse(amount);
     }
 
-    public void deposit(BigDecimal actualBalance, BigDecimal amount, UUID walletId) {
-        if (walletRepository.makeDeposit(actualBalance.add(amount), walletId) == 0) {
-            throw new DataHasNotUpdateException("The data has not been update");
+
+    public void deposit(BigDecimal actualBalance, TransferRequest transferRequest) {
+        int success = walletRepository.updateAmountById(actualBalance.add(transferRequest.getAmount()), transferRequest.getWalletId());
+        if (success == 0) {
+            saveOperation(transferRequest, false);
+            throw new DataHasNotUpdateException("The data has not been update. Wallet Id: " + transferRequest.getWalletId());
         }
+        saveOperation(transferRequest, true);
     }
 
-    public void withdraw(BigDecimal actualBalance, BigDecimal amount, UUID walletId) {
-        if (walletRepository.makeWithdraw((actualBalance.subtract(amount)), walletId) == 0) {
-            throw new DataHasNotUpdateException("The data has not been update");
+    public void withdraw(BigDecimal actualBalance, TransferRequest transferRequest) {
+        int success = walletRepository.updateAmountById((actualBalance.subtract(transferRequest.getAmount())), transferRequest.getWalletId());
+        if (success == 0) {
+            saveOperation(transferRequest, false);
+            throw new DataHasNotUpdateException("The data has not been update. Wallet Id: " + transferRequest.getWalletId());
         }
+        saveOperation(transferRequest, true);
+    }
+
+    public void saveOperation(TransferRequest transferRequest, Boolean success) {
+        Operation operation = Operation.builder()
+                .walletId(transferRequest.getWalletId())
+                .operationType(transferRequest.getOperationType())
+                .amount(transferRequest.getAmount())
+                .success(success)
+                .build();
+        operationRepository.save(operation);
     }
 }
