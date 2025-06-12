@@ -20,6 +20,7 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     private UUID walletId;
+
     @Column(name = "amount")
     private BigDecimal amount;
 }
