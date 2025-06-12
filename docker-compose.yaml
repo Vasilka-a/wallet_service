@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    container_name: wallet-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    volumes:
+      - ./logs:/app/logs
+
+  database:
+    image: postgres:15
+    env_file:
+      - .env
+    container_name: dbPostgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - database-data:/var/lib/postgresql/data
+
+volumes:
+  database-data:
