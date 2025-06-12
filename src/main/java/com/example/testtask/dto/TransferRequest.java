@@ -3,9 +3,7 @@ package com.example.testtask.dto;
 import com.example.testtask.entity.OperationType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -13,6 +11,8 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@With
+@Builder
 public class TransferRequest {
     @NotNull(message = "WalletId cannot be null")
     private UUID walletId;
